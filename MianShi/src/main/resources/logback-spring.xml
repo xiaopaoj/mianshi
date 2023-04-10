@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" debug="true" xmlns="http://ch.qos.logback/xml/ns/logback"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://ch.qos.logback/xml/ns/logback
+               https://raw.githubusercontent.com/enricopulatzo/logback-XSD/master/src/main/xsd/logback.xsd http://ch.qos.logback/xml/ns/logback ">
+
+    <contextName>lianks-api</contextName>
+
+    <!--普通日志记录【文件日志】-->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>/tmp/log/java-mianshi.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>/tmp/log/java-mianshi-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>16MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!-- 保留30天日志，最大10GB-->
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+        <!-- 追加方式记录日志 -->
+        <append>true</append>
+        <!-- 日志文件的格式 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{requestId}] %-5level %logger [%file:%line] - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!--命令行控制台日志-->
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %X{requestId} %-5level %logger [%file:%line] - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+
+    <!--本地环境，主要是开启了Console打印-->
+    <springProfile name="int,vm,dev">
+        <root level="DEBUG">
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="Console"/>
+        </root>
+    </springProfile>
+
+    <!--测试服，关闭Console打印-->
+    <springProfile name="uat_test,uat_test_ios">
+
+        <root level="INFO">
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="Console"/>
+        </root>
+    </springProfile>
+
+    <!--正式服，关闭console打印，还应调高日志level-->
+    <springProfile name="uat_new,uat_new_ios">
+        <root level="INFO">
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+    <logger name="org.apache.http.impl.conn.PoolingHttpClientConnectionManager" level="WARN"/>
+
+</configuration>
